@@ -21,7 +21,6 @@ export default async function Page() {
   const region = process.env.VERCEL_REGION ?? "local";
   const environment = process.env.VERCEL_ENV ?? "development";
   const memoryLimit = process.constrainedMemory();
-  const readableFiles = snapshot.files.filter((file) => file.content !== null);
 
   return (
     <div className="vbg-shell">
@@ -29,28 +28,16 @@ export default async function Page() {
         Skip to content
       </a>
 
-      <header className="vbg-header">
-        <div className="vbg-masthead">
-          <span className="vbg-identity">
-            <span className="vbg-wordmark" role="img" aria-label="Vercel" />
-          </span>
-          <div className="vbg-document-meta">
-            <span className="vbg-state">
-              Environment <span className="vbg-mono">{environment}</span>
-            </span>
-            <span className="vbg-date">
-              <time className="vbg-mono" dateTime={snapshot.collectedAt}>
-                {snapshot.collectedAt}
-              </time>
-            </span>
-          </div>
-        </div>
-      </header>
-
       <main id="main">
         <section className="vbg-opening">
           <div className="vbg-opening-claim">
             <h1 className="vbg-title">What this function sees on each request</h1>
+            <p className="vbg-meta">
+              Environment <span className="vbg-mono">{environment}</span>, collected at{" "}
+              <time className="vbg-mono" dateTime={snapshot.collectedAt}>
+                {snapshot.collectedAt}
+              </time>
+            </p>
             <p className="vbg-lede">
               This page shows {headerRows.length} request headers, {snapshot.env.length} environment variables, and
               the host data for one request. The values are not redacted. Anyone who can open this page can read
@@ -129,27 +116,6 @@ export default async function Page() {
         <RowSection id="process" title="Process" keyLabel="Field" rows={snapshot.process} mono={false} />
         <RowSection id="versions" title="Runtime versions" keyLabel="Component" rows={snapshot.versions} />
 
-        <section className="vbg-section" aria-labelledby="files-title">
-          <div className="vbg-flow">
-            <h2 id="files-title" className="vbg-heading-24">
-              Raw system files
-            </h2>
-            <p className="vbg-caption">
-              {readableFiles.length} of {snapshot.files.length} files are readable on this host.
-            </p>
-            <div className="vbg-custom-files">
-              {snapshot.files.map((file) => (
-                <details key={file.path} className="vbg-custom-file" open={file.path === "/proc/cpuinfo"}>
-                  <summary>
-                    <span className="vbg-mono">{file.path}</span>
-                    {file.content === null ? " (not available)" : ""}
-                  </summary>
-                  {file.content !== null && <pre className="vbg-custom-raw vbg-mono">{file.content}</pre>}
-                </details>
-              ))}
-            </div>
-          </div>
-        </section>
       </main>
 
       <footer className="vbg-footer">

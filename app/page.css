@@ -7,29 +7,3 @@
   overflow-wrap: anywhere;
   width: 32%;
 }
-
-.vbg-custom-files {
-  display: grid;
-  gap: var(--vbg-space-3);
-}
-
-.vbg-custom-files > * {
-  margin: 0;
-}
-
-.vbg-custom-file summary {
-  cursor: pointer;
-  padding-block: var(--vbg-space-2);
-}
-
-.vbg-custom-raw {
-  margin: var(--vbg-space-2) 0 0;
-  padding: var(--vbg-space-4);
-  max-height: 480px;
-  overflow: auto;
-  border: 1px solid var(--vbg-border-subtle);
-  border-radius: var(--vbg-radius-small);
-  font-size: var(--vbg-type-compact);
-  line-height: var(--vbg-leading-compact);
-  white-space: pre;
-}

@@ -26,8 +26,8 @@ export const metadata: Metadata = {
  */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="vbg-report">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} style={{ colorScheme: "dark" }}>
+      <body className="vbg-report" data-theme="dark">
         <link rel="stylesheet" href="https://vercel.com/geist/vercel-brand.css" precedence="vbg" />
         {children}
       </body>

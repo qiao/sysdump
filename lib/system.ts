@@ -8,7 +8,7 @@ export interface Row {
 }
 
 /** The content of one system file. `content` is `null` when the file cannot be read. */
-export interface RawFile {
+interface RawFile {
   path: string;
   content: string | null;
 }
@@ -32,7 +32,6 @@ export interface SystemSnapshot {
   process: Row[];
   versions: Row[];
   env: Row[];
-  files: RawFile[];
 }
 
 /**
@@ -70,7 +69,6 @@ export async function collectSystemSnapshot(): Promise<SystemSnapshot> {
     process: getProcess(),
     versions: toRows(process.versions),
     env: toRows(process.env),
-    files,
   };
 }
 
@@ -94,18 +92,8 @@ export function formatBytes(bytes: number): string {
   return `${(bytes / 1024 ** exponent).toFixed(2)} ${units[exponent]}`;
 }
 
-const RAW_FILE_PATHS = [
-  "/proc/cpuinfo",
-  "/proc/meminfo",
-  "/proc/version",
-  "/etc/os-release",
-  "/etc/lsb-release",
-  "/etc/system-release",
-  "/proc/self/cgroup",
-  "/sys/fs/cgroup/cpu.max",
-  "/sys/fs/cgroup/memory.max",
-  "/proc/self/mounts",
-];
+// The OS and limit sections read these files. The files exist only on Linux hosts.
+const RAW_FILE_PATHS = ["/etc/os-release", "/sys/fs/cgroup/cpu.max", "/sys/fs/cgroup/memory.max"];
 
 async function readRawFile(path: string): Promise<RawFile> {
   try {
