@@ -1,6 +1,6 @@
 # sysdump
 
-A page that dumps everything about the environment it runs in: request headers, all environment variables, OS, CPU, memory, disk, network, and process data.
+A minimal probe for cloud runtimes. Deploy it to a platform, open the page, and see what your code really gets: request headers, environment variables, OS, CPU, memory, disk, network, and process data.
 
 Values are not redacted. Keep the page behind authentication.
 
