@@ -122,13 +122,12 @@ export default async function Page() {
 interface RowSectionProps {
   id: string;
   title: string;
-  caption?: string;
   keyLabel: string;
   rows: Row[];
   mono?: boolean;
 }
 
-function RowSection({ id, title, caption, keyLabel, rows, mono = true }: RowSectionProps) {
+function RowSection({ id, title, keyLabel, rows, mono = true }: RowSectionProps) {
   const valueClass = mono ? "vbg-custom-value vbg-mono" : "vbg-custom-value";
   const keyClass = mono ? "vbg-custom-key vbg-mono" : "vbg-custom-key";
 
@@ -138,7 +137,6 @@ function RowSection({ id, title, caption, keyLabel, rows, mono = true }: RowSect
         <h2 id={`${id}-title`} className="vbg-heading-24">
           {title}
         </h2>
-        {caption && <p className="vbg-caption">{caption}</p>}
         <div className="vbg-table-wrap">
           <table>
             <caption className="vbg-visually-hidden">
