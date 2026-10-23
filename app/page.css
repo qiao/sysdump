@@ -1,11 +1,55 @@
+/* Gives every table the same column split, so values line up from one section to the next. */
+.vbg-custom-table {
+  table-layout: fixed;
+}
+
+/* Values carry the data, so they get the primary color. Keys get the secondary color. */
 .vbg-custom-value {
+  color: var(--vbg-text-primary);
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
 .vbg-custom-key {
+  color: var(--vbg-text-secondary);
+  font-weight: var(--vbg-weight-regular);
   overflow-wrap: anywhere;
-  width: 32%;
+  width: 28%;
+}
+
+.vbg-custom-empty {
+  color: var(--vbg-text-secondary);
+  font-style: italic;
+}
+
+/* Marks the row under the pointer, so the eye can follow it across the gap between key and value. */
+.vbg-custom-section tbody tr:hover {
+  background: var(--vbg-surface-secondary);
+}
+
+.vbg-custom-count {
+  color: var(--vbg-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.vbg-custom-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vbg-space-2) var(--vbg-space-5);
+  margin-top: var(--vbg-space-4);
+}
+
+.vbg-custom-nav a {
+  color: var(--vbg-text-primary);
+  text-decoration: none;
+}
+
+.vbg-custom-nav a:hover {
+  text-decoration: underline;
+}
+
+.vbg-custom-section {
+  scroll-margin-top: var(--vbg-space-6);
 }
 
 /* Keeps each summary value on one line, so long hostnames or OS names cannot push the row out of line. The tables show the full value. */

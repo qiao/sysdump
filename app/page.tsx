@@ -24,6 +24,19 @@ export default async function Page() {
   const osVersion = findRow(snapshot.os, ["ProductVersion"]);
   const osLabel = [osName, osVersion].filter(Boolean).join(" ") || os.platform();
   const memoryLimit = process.constrainedMemory();
+  const sections: RowSectionProps[] = [
+    { id: "headers", title: "Headers", keyLabel: "Header", rows: headerRows },
+    { id: "env", title: "Environment", keyLabel: "Variable", rows: snapshot.env },
+    { id: "os", title: "OS", keyLabel: "Field", rows: snapshot.os, mono: false },
+    { id: "kernel", title: "Kernel", keyLabel: "Field", rows: snapshot.uname, mono: false },
+    { id: "cpu", title: "CPU", keyLabel: "CPU", rows: snapshot.cpu.cores },
+    { id: "memory", title: "Memory", keyLabel: "Measure", rows: snapshot.memory, mono: false },
+    { id: "disk", title: "Disk", keyLabel: "Path", rows: snapshot.disk },
+    { id: "limits", title: "Limits", keyLabel: "Measure", rows: snapshot.limits, mono: false },
+    { id: "network", title: "Network", keyLabel: "Interface", rows: snapshot.network },
+    { id: "process", title: "Process", keyLabel: "Field", rows: snapshot.process, mono: false },
+    { id: "versions", title: "Versions", keyLabel: "Component", rows: snapshot.versions },
+  ];
 
   return (
     <div className="vbg-shell">
@@ -35,6 +48,13 @@ export default async function Page() {
         <section className="vbg-opening">
           <div className="vbg-opening-claim">
             <h1 className="vbg-title">System dump</h1>
+            <nav aria-label="Sections" className="vbg-custom-nav">
+              {sections.map((section) => (
+                <a key={section.id} href={`#${section.id}`}>
+                  {section.title} <span className="vbg-custom-count">{section.rows.length}</span>
+                </a>
+              ))}
+            </nav>
           </div>
 
           <div className="vbg-opening-proof">
@@ -71,44 +91,9 @@ export default async function Page() {
           </div>
         </section>
 
-        <RowSection
-          id="headers"
-          title="Headers"
-          keyLabel="Header"
-          rows={headerRows}
-        />
-        <RowSection
-          id="env"
-          title="Environment"
-          keyLabel="Variable"
-          rows={snapshot.env}
-        />
-        <RowSection
-          id="os"
-          title="OS"
-          keyLabel="Field"
-          rows={snapshot.os}
-        />
-        <RowSection id="uname" title="Kernel" keyLabel="Field" rows={snapshot.uname} mono={false} />
-        <RowSection
-          id="cpu"
-          title="CPU"
-          keyLabel="CPU"
-          rows={snapshot.cpu.cores}
-        />
-        <RowSection id="memory" title="Memory" keyLabel="Measure" rows={snapshot.memory} mono={false} />
-        <RowSection id="disk" title="Disk" keyLabel="Path" rows={snapshot.disk} />
-        <RowSection
-          id="limits"
-          title="Limits"
-          keyLabel="Measure"
-          rows={snapshot.limits}
-          mono={false}
-        />
-        <RowSection id="network" title="Network" keyLabel="Interface" rows={snapshot.network} />
-        <RowSection id="process" title="Process" keyLabel="Field" rows={snapshot.process} mono={false} />
-        <RowSection id="versions" title="Versions" keyLabel="Component" rows={snapshot.versions} />
-
+        {sections.map((section) => (
+          <RowSection key={section.id} {...section} />
+        ))}
       </main>
 
     </div>
@@ -132,17 +117,17 @@ function RowSection({ id, title, keyLabel, rows, mono = true }: RowSectionProps)
   const keyClass = mono ? "vbg-custom-key vbg-mono" : "vbg-custom-key";
 
   return (
-    <section className="vbg-section" aria-labelledby={`${id}-title`}>
+    <section id={id} className="vbg-section vbg-custom-section" aria-labelledby={`${id}-title`}>
       <div className="vbg-flow">
         <h2 id={`${id}-title`} className="vbg-heading-24">
-          {title}
+          {title} <span className="vbg-custom-count">{rows.length}</span>
         </h2>
         <div className="vbg-table-wrap">
-          <table>
+          <table className="vbg-custom-table">
             <caption className="vbg-visually-hidden">
               {title}, {rows.length} rows
             </caption>
-            <thead>
+            <thead className="vbg-visually-hidden">
               <tr>
                 <th scope="col">{keyLabel}</th>
                 <th scope="col">Value</th>
@@ -154,7 +139,7 @@ function RowSection({ id, title, keyLabel, rows, mono = true }: RowSectionProps)
                   <th scope="row" className={keyClass}>
                     {row.label}
                   </th>
-                  <td className={valueClass}>{row.value || <span className="vbg-meta">empty</span>}</td>
+                  <td className={valueClass}>{row.value || <span className="vbg-custom-empty">empty</span>}</td>
                 </tr>
               ))}
             </tbody>
