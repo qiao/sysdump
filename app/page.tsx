@@ -18,7 +18,7 @@ export default async function Page() {
     .map(([label, value]) => ({ label, value }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
-  const region = process.env.VERCEL_REGION ?? "local";
+  const region = process.env.VERCEL_REGION;
   const environment = process.env.VERCEL_ENV ?? "development";
   const memoryLimit = process.constrainedMemory();
 
@@ -43,9 +43,9 @@ export default async function Page() {
           <div className="vbg-opening-proof">
             <div className="vbg-stat-strip">
               <div className="vbg-stat">
-                <p className="vbg-stat-label">Region</p>
-                <p className="vbg-stat-value vbg-mono">{region}</p>
-                <p className="vbg-stat-detail">{snapshot.uname[1]?.value}</p>
+                <p className="vbg-stat-label">Vercel Function region</p>
+                <p className="vbg-stat-value vbg-mono">{region ?? "none"}</p>
+                <p className="vbg-stat-detail">{region ? "From VERCEL_REGION" : "Not running on Vercel"}</p>
               </div>
               <div className="vbg-stat">
                 <p className="vbg-stat-label">CPUs</p>
