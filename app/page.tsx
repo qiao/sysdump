@@ -115,12 +115,15 @@ interface RowSectionProps {
 function RowSection({ id, title, keyLabel, rows, mono = true }: RowSectionProps) {
   const valueClass = mono ? "vbg-custom-value vbg-mono" : "vbg-custom-value";
   const keyClass = mono ? "vbg-custom-key vbg-mono" : "vbg-custom-key";
+  const rowIds = toRowIds(id, rows);
 
   return (
     <section id={id} className="vbg-section vbg-custom-section" aria-labelledby={`${id}-title`}>
       <div className="vbg-flow">
         <h2 id={`${id}-title`} className="vbg-heading-24">
-          {title}
+          <a href={`#${id}`} className="vbg-custom-anchor">
+            {title}
+          </a>
         </h2>
         <div className="vbg-table-wrap">
           <table className="vbg-custom-table">
@@ -138,12 +141,14 @@ function RowSection({ id, title, keyLabel, rows, mono = true }: RowSectionProps)
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, index) => (
-                <tr key={`${row.label}-${index}`}>
+              {rowIds.map((rowId, index) => (
+                <tr key={rowId} id={rowId} className="vbg-custom-row">
                   <th scope="row" className={keyClass}>
-                    {row.label}
+                    <a href={`#${rowId}`} className="vbg-custom-anchor">
+                      {rows[index]?.label}
+                    </a>
                   </th>
-                  <td className={valueClass}>{row.value || <span className="vbg-custom-empty">empty</span>}</td>
+                  <td className={valueClass}>{rows[index]?.value || <span className="vbg-custom-empty">empty</span>}</td>
                 </tr>
               ))}
             </tbody>
@@ -152,4 +157,24 @@ function RowSection({ id, title, keyLabel, rows, mono = true }: RowSectionProps)
       </div>
     </section>
   );
+}
+
+/**
+ * Builds one unique, URL-safe element ID for each row, such as `env-PATH` or `headers-user-agent`.
+ * A label that repeats in the same section, such as a network interface name, gets a numeric suffix.
+ */
+function toRowIds(sectionId: string, rows: Row[]): string[] {
+  const seen = new Map<string, number>();
+
+  return rows.map((row) => {
+    const base = `${sectionId}-${row.label.replace(/[^A-Za-z0-9_.-]+/g, "-")}`;
+    const count = seen.get(base) ?? 0;
+    seen.set(base, count + 1);
+
+    if (count === 0) {
+      return base;
+    }
+
+    return `${base}-${count + 1}`;
+  });
 }

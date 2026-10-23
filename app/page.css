@@ -46,8 +46,28 @@
   text-decoration: underline;
 }
 
-.vbg-custom-section {
+.vbg-custom-section,
+.vbg-custom-row {
   scroll-margin-top: var(--vbg-space-6);
+}
+
+/* Each section heading and each key links to itself, so a reader can copy a deep link. */
+.vbg-custom-anchor {
+  color: inherit;
+  text-decoration: none;
+}
+
+.vbg-custom-anchor:hover {
+  text-decoration: underline;
+}
+
+/* Marks the row that the URL hash points to. The text color also changes, so the mark does not rely on the background alone. */
+.vbg-custom-row:target {
+  background: var(--vbg-surface-secondary);
+}
+
+.vbg-custom-row:target .vbg-custom-key {
+  color: var(--vbg-text-primary);
 }
 
 /* Keeps each summary value on one line, so long hostnames or OS names cannot push the row out of line. The tables show the full value. */

@@ -1,10 +1,12 @@
 # sysdump
 
-A Next.js 16 app that shows, for each request, the request headers, all environment variables, and host data: OS release, `uname`, CPUs, memory, disk, cgroup limits, network interfaces, process data, runtime versions, and raw files such as `/proc/cpuinfo`.
+A Next.js page that dumps everything about the environment it runs in: request headers, all environment variables, OS, CPU, memory, disk, network, and process data.
 
-The page does not redact the environment. Anyone who can open the page can read every secret. Put the page behind authentication before you deploy it, and give it no production secrets.
+Values are not redacted. Keep the page behind authentication.
 
 ```sh
 pnpm install
 pnpm dev
 ```
+
+Link to a section with `#env`, or to one row with `#env-PATH`.
