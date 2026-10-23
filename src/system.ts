@@ -193,7 +193,7 @@ function getMemory(): Row[] {
     { label: "Process heap total", value: formatBytes(usage.heapTotal) },
     { label: "Process external", value: formatBytes(usage.external) },
     { label: "Process array buffers", value: formatBytes(usage.arrayBuffers) },
-    { label: "Constrained memory", value: formatBytes(process.constrainedMemory()) },
+    { label: "Constrained memory", value: formatLimit(process.constrainedMemory(), total) },
     { label: "Available memory", value: formatBytes(process.availableMemory()) },
   ];
 }
@@ -257,6 +257,16 @@ function getProcess(): Row[] {
     { label: "Process title", value: process.title },
     { label: "Time zone", value: Intl.DateTimeFormat().resolvedOptions().timeZone },
   ];
+}
+
+function formatLimit(limit: number, total: number): string {
+  const hasLimit = limit > 0 && limit < total;
+
+  if (!hasLimit) {
+    return "No limit";
+  }
+
+  return formatBytes(limit);
 }
 
 function formatDuration(seconds: number): string {
