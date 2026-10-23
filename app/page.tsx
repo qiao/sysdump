@@ -31,7 +31,7 @@ export default async function Page() {
       <main id="main">
         <section className="vbg-opening">
           <div className="vbg-opening-claim">
-            <h1 className="vbg-title">What this function sees on each request</h1>
+            <h1 className="vbg-title">System dump</h1>
             <p className="vbg-meta">
               Environment <span className="vbg-mono">{environment}</span>, collected at{" "}
               <time className="vbg-mono" dateTime={snapshot.collectedAt}>
@@ -39,9 +39,7 @@ export default async function Page() {
               </time>
             </p>
             <p className="vbg-lede">
-              This page shows {headerRows.length} request headers, {snapshot.env.length} environment variables, and
-              the host data for one request. The values are not redacted. Anyone who can open this page can read
-              every secret in the environment.
+              {headerRows.length} headers, {snapshot.env.length} environment variables, and host data. Not redacted.
             </p>
           </div>
 
