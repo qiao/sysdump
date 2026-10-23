@@ -38,9 +38,6 @@ export default async function Page() {
                 {snapshot.collectedAt}
               </time>
             </p>
-            <p className="vbg-lede">
-              {headerRows.length} headers, {snapshot.env.length} environment variables, and host data. Not redacted.
-            </p>
           </div>
 
           <div className="vbg-opening-proof">
