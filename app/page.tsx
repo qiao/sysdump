@@ -20,9 +20,9 @@ export default async function Page() {
     .map(([label, value]) => ({ label, value }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
-  const environment = process.env.NODE_ENV ?? "unknown";
   const osName = findRow(snapshot.os, ["PRETTY_NAME", "ProductName"]);
   const osVersion = findRow(snapshot.os, ["ProductVersion"]);
+  const osLabel = [osName, osVersion].filter(Boolean).join(" ") || os.platform();
   const memoryLimit = process.constrainedMemory();
 
   return (
@@ -35,25 +35,25 @@ export default async function Page() {
         <section className="vbg-opening">
           <div className="vbg-opening-claim">
             <h1 className="vbg-title">System dump</h1>
-            <p className="vbg-meta">
-              <span className="vbg-mono">NODE_ENV={environment}</span>, collected at{" "}
-              <time className="vbg-mono" dateTime={snapshot.collectedAt}>
-                {snapshot.collectedAt}
-              </time>
-            </p>
           </div>
 
           <div className="vbg-opening-proof">
             <div className="vbg-stat-strip">
               <div className="vbg-stat">
                 <p className="vbg-stat-label">OS</p>
-                <p className="vbg-stat-value">{[osName, osVersion].filter(Boolean).join(" ") || os.platform()}</p>
-                <p className="vbg-stat-detail vbg-mono">{os.hostname()}</p>
+                <p className="vbg-stat-value vbg-custom-fit" title={osLabel}>
+                  {osLabel}
+                </p>
+                <p className="vbg-stat-detail vbg-mono vbg-custom-fit" title={os.hostname()}>
+                  {os.hostname()}
+                </p>
               </div>
               <div className="vbg-stat">
                 <p className="vbg-stat-label">CPUs</p>
                 <p className="vbg-stat-value">{snapshot.cpu.count}</p>
-                <p className="vbg-stat-detail">{snapshot.cpu.model}</p>
+                <p className="vbg-stat-detail vbg-custom-fit" title={snapshot.cpu.model}>
+                  {snapshot.cpu.model}
+                </p>
               </div>
               <div className="vbg-stat">
                 <p className="vbg-stat-label">Memory</p>

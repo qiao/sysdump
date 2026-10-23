@@ -7,3 +7,11 @@
   overflow-wrap: anywhere;
   width: 32%;
 }
+
+/* Keeps each summary value on one line, so long hostnames or OS names cannot push the row out of line. The tables show the full value. */
+.vbg-custom-fit {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
