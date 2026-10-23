@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * Root layout. Loads the Vercel brand stylesheet and the Geist fonts.
+ * Root layout. Loads the brand stylesheet from vercel.com/design.md and the Geist fonts.
  *
  * @param props The layout props.
  * @param props.children The page content.

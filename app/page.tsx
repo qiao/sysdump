@@ -1,3 +1,5 @@
+import os from "node:os";
+
 import { headers } from "next/headers";
 
 import { collectSystemSnapshot, formatBytes, type Row } from "@/lib/system";
@@ -18,8 +20,9 @@ export default async function Page() {
     .map(([label, value]) => ({ label, value }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
-  const region = process.env.VERCEL_REGION;
-  const environment = process.env.VERCEL_ENV ?? "development";
+  const environment = process.env.NODE_ENV ?? "unknown";
+  const osName = findRow(snapshot.os, ["PRETTY_NAME", "ProductName"]);
+  const osVersion = findRow(snapshot.os, ["ProductVersion"]);
   const memoryLimit = process.constrainedMemory();
 
   return (
@@ -33,7 +36,7 @@ export default async function Page() {
           <div className="vbg-opening-claim">
             <h1 className="vbg-title">System dump</h1>
             <p className="vbg-meta">
-              Environment <span className="vbg-mono">{environment}</span>, collected at{" "}
+              <span className="vbg-mono">NODE_ENV={environment}</span>, collected at{" "}
               <time className="vbg-mono" dateTime={snapshot.collectedAt}>
                 {snapshot.collectedAt}
               </time>
@@ -43,9 +46,9 @@ export default async function Page() {
           <div className="vbg-opening-proof">
             <div className="vbg-stat-strip">
               <div className="vbg-stat">
-                <p className="vbg-stat-label">Vercel Function region</p>
-                <p className="vbg-stat-value vbg-mono">{region ?? "none"}</p>
-                <p className="vbg-stat-detail">{region ? "From VERCEL_REGION" : "Not running on Vercel"}</p>
+                <p className="vbg-stat-label">OS</p>
+                <p className="vbg-stat-value">{[osName, osVersion].filter(Boolean).join(" ") || os.platform()}</p>
+                <p className="vbg-stat-detail vbg-mono">{os.hostname()}</p>
               </div>
               <div className="vbg-stat">
                 <p className="vbg-stat-label">CPUs</p>
@@ -108,12 +111,12 @@ export default async function Page() {
 
       </main>
 
-      <footer className="vbg-footer">
-        <span className="vbg-logo" role="img" aria-label="Vercel" />
-        <span>Internal diagnostic page. Do not share the URL.</span>
-      </footer>
     </div>
   );
+}
+
+function findRow(rows: Row[], labels: string[]): string | undefined {
+  return rows.find((row) => labels.includes(row.label))?.value;
 }
 
 interface RowSectionProps {
