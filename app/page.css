@@ -63,7 +63,7 @@
 
 /* Marks the row that the URL hash points to. The text color also changes, so the mark does not rely on the background alone. */
 .vbg-custom-row:target {
-  background: var(--vbg-surface-secondary);
+  background: var(--vbg-border-subtle);
 }
 
 .vbg-custom-row:target .vbg-custom-key {
