@@ -6,7 +6,17 @@ Values are not redacted. Keep the page behind authentication.
 
 It is one file, `server.ts`, with no runtime dependencies. Node.js 24 runs the TypeScript source directly.
 
+Run it with Node.js 24 or later:
+
 ```sh
-node server.ts                                   # http://127.0.0.1:3000
-docker build -t sysdump . && docker run -p 3000:3000 sysdump
+node server.ts
 ```
+
+Or run it with Docker:
+
+```sh
+docker build -t sysdump .
+docker run -p 3000:3000 sysdump
+```
+
+Then open http://localhost:3000.
