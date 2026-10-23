@@ -73,46 +73,41 @@ export default async function Page() {
 
         <RowSection
           id="headers"
-          title="Request headers that reached the function"
-          caption="Header names are in lowercase. The proxy adds the x-vercel-* headers."
+          title="Headers"
           keyLabel="Header"
           rows={headerRows}
         />
         <RowSection
           id="env"
-          title="Environment variables in the process"
-          caption="All values from process.env, in alphabetical order, with no redaction."
+          title="Environment"
           keyLabel="Variable"
           rows={snapshot.env}
         />
         <RowSection
           id="os"
-          title="Operating system"
-          caption="Fields from /etc/os-release on Linux, or SystemVersion.plist on macOS."
+          title="OS"
           keyLabel="Field"
           rows={snapshot.os}
         />
-        <RowSection id="uname" title="Kernel and host" keyLabel="Field" rows={snapshot.uname} mono={false} />
+        <RowSection id="uname" title="Kernel" keyLabel="Field" rows={snapshot.uname} mono={false} />
         <RowSection
           id="cpu"
-          title={`${snapshot.cpu.count} CPUs at ${snapshot.cpu.speedMhz} MHz`}
-          caption="One row for each logical CPU that os.cpus() returns."
+          title="CPU"
           keyLabel="CPU"
           rows={snapshot.cpu.cores}
         />
-        <RowSection id="memory" title="Memory of the host and the process" keyLabel="Measure" rows={snapshot.memory} mono={false} />
-        <RowSection id="disk" title="Disk space" keyLabel="Path" rows={snapshot.disk} />
+        <RowSection id="memory" title="Memory" keyLabel="Measure" rows={snapshot.memory} mono={false} />
+        <RowSection id="disk" title="Disk" keyLabel="Path" rows={snapshot.disk} />
         <RowSection
           id="limits"
-          title="Resource limits and usage"
-          caption="The cgroup files exist only on Linux hosts."
+          title="Limits"
           keyLabel="Measure"
           rows={snapshot.limits}
           mono={false}
         />
-        <RowSection id="network" title="Network interfaces" keyLabel="Interface" rows={snapshot.network} />
+        <RowSection id="network" title="Network" keyLabel="Interface" rows={snapshot.network} />
         <RowSection id="process" title="Process" keyLabel="Field" rows={snapshot.process} mono={false} />
-        <RowSection id="versions" title="Runtime versions" keyLabel="Component" rows={snapshot.versions} />
+        <RowSection id="versions" title="Versions" keyLabel="Component" rows={snapshot.versions} />
 
       </main>
 
