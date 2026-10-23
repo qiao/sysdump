@@ -9,6 +9,9 @@ const port = Number(process.env.PORT ?? 3000);
 const BRAND_CSS_URL = "https://vercel.com/geist/vercel-brand.css";
 const FONTS_CSS_URL = "https://fonts.googleapis.com/css2?family=Geist:wght@400..600&family=Geist+Mono:wght@400..600&display=block";
 
+// Limits the startup delay when the host has no internet access.
+const FETCH_TIMEOUT_MS = 5000;
+
 // Google Fonts sends woff2 files only to a browser user agent.
 const BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0 Safari/537.36";
 
@@ -188,7 +191,7 @@ async function downloadFontFace(face: string): Promise<{ path: string; face: str
     throw new Error("A @font-face rule has no woff2 URL");
   }
 
-  const response = await fetch(url);
+  const response = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
 
   if (!response.ok) {
     throw new Error(`${url} returned ${response.status}`);
@@ -206,7 +209,7 @@ async function fetchText(url: string, userAgent?: string): Promise<string> {
     headers["user-agent"] = userAgent;
   }
 
-  const response = await fetch(url, { headers });
+  const response = await fetch(url, { headers, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
 
   if (!response.ok) {
     throw new Error(`${url} returned ${response.status}`);
