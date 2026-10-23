@@ -51,7 +51,7 @@ export default async function Page() {
             <nav aria-label="Sections" className="vbg-custom-nav">
               {sections.map((section) => (
                 <a key={section.id} href={`#${section.id}`}>
-                  {section.title} <span className="vbg-custom-count">{section.rows.length}</span>
+                  {section.title}
                 </a>
               ))}
             </nav>
@@ -120,13 +120,17 @@ function RowSection({ id, title, keyLabel, rows, mono = true }: RowSectionProps)
     <section id={id} className="vbg-section vbg-custom-section" aria-labelledby={`${id}-title`}>
       <div className="vbg-flow">
         <h2 id={`${id}-title`} className="vbg-heading-24">
-          {title} <span className="vbg-custom-count">{rows.length}</span>
+          {title}
         </h2>
         <div className="vbg-table-wrap">
           <table className="vbg-custom-table">
             <caption className="vbg-visually-hidden">
               {title}, {rows.length} rows
             </caption>
+            <colgroup>
+              <col className="vbg-custom-key-col" />
+              <col />
+            </colgroup>
             <thead className="vbg-visually-hidden">
               <tr>
                 <th scope="col">{keyLabel}</th>
