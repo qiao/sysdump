@@ -10,5 +10,3 @@ It is one file, `server.ts`, with no runtime dependencies. Node.js 24 runs the T
 node server.ts                                   # http://127.0.0.1:3000
 docker build -t sysdump . && docker run -p 3000:3000 sysdump
 ```
-
-Link to a section with `#env`, or to one row with `#env-PATH`.
