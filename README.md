@@ -4,10 +4,10 @@ A page that dumps everything about the environment it runs in: request headers, 
 
 Values are not redacted. Keep the page behind authentication.
 
-It is one Node.js server with no runtime dependencies. Node.js 24 runs the TypeScript source directly.
+It is one file, `server.ts`, with no runtime dependencies. Node.js 24 runs the TypeScript source directly.
 
 ```sh
-node src/server.ts                                   # http://127.0.0.1:3000
+node server.ts                                   # http://127.0.0.1:3000
 docker build -t sysdump . && docker run -p 3000:3000 sysdump
 ```
 
