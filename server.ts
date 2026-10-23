@@ -6,98 +6,13 @@ import os from "node:os";
 const host = process.env.HOST ?? "127.0.0.1";
 const port = Number(process.env.PORT ?? 3000);
 
-const server = createServer(async (request, response) => {
-  if (request.method !== "GET" || request.url?.split("?")[0] !== "/") {
-    response.writeHead(404, { "content-type": "text/plain" }).end("Not found\n");
-    return;
-  }
+const BRAND_CSS_URL = "https://vercel.com/geist/vercel-brand.css";
+const FONTS_CSS_URL = "https://fonts.googleapis.com/css2?family=Geist:wght@400..600&family=Geist+Mono:wght@400..600&display=block";
 
-  try {
-    const html = renderPage(request.headers, await collectSystemSnapshot());
+// Google Fonts sends woff2 files only to a browser user agent.
+const BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0 Safari/537.36";
 
-    response.writeHead(200, {
-      "content-type": "text/html; charset=utf-8",
-      "cache-control": "no-store",
-      "x-robots-tag": "noindex, nofollow",
-      "x-content-type-options": "nosniff",
-    });
-    response.end(html);
-  } catch (error) {
-    console.error(error);
-    response.writeHead(500, { "content-type": "text/plain" }).end("Cannot collect the system data\n");
-  }
-});
-
-server.listen(port, host, () => {
-  console.log(`sysdump is listening on http://${host}:${port}`);
-});
-
-// Stops on Ctrl+C and on "docker stop" without the 10 s kill timeout.
-const stop = () => server.close(() => process.exit(0));
-process.on("SIGINT", stop);
-process.on("SIGTERM", stop);
-
-// Page rendering
-
-/**
- * Renders the full HTML page. Every value goes through `escapeHtml`, because headers and environment values can hold markup.
- *
- * @param headers The request headers.
- * @param snapshot The system data for this request.
- * @returns The HTML document.
- *
- * @example
- * response.end(renderPage(request.headers, await collectSystemSnapshot()));
- */
-function renderPage(headers: IncomingHttpHeaders, snapshot: SystemSnapshot): string {
-  const headerRows: Row[] = Object.entries(headers)
-    .map(([label, value]) => ({ label, value: Array.isArray(value) ? value.join(", ") : (value ?? "") }))
-    .sort((a, b) => a.label.localeCompare(b.label));
-
-  const osName = findRow(snapshot.os, ["PRETTY_NAME", "ProductName"]);
-  const osVersion = findRow(snapshot.os, ["ProductVersion"]);
-  const osLabel = [osName, osVersion].filter(Boolean).join(" ") || os.platform();
-
-  // Without a cgroup limit, constrainedMemory() returns 0 or a value near 2^64, so only a value below the host total is a real limit.
-  const constrainedMemory = process.constrainedMemory();
-  const memoryLimit = constrainedMemory > 0 && constrainedMemory < snapshot.memoryTotal ? constrainedMemory : 0;
-
-  const sections: Section[] = [
-    { id: "headers", title: "Headers", keyLabel: "Header", rows: headerRows, mono: true },
-    { id: "env", title: "Environment", keyLabel: "Variable", rows: snapshot.env, mono: true },
-    { id: "os", title: "OS", keyLabel: "Field", rows: snapshot.os, mono: false },
-    { id: "kernel", title: "Kernel", keyLabel: "Field", rows: snapshot.uname, mono: false },
-    { id: "cpu", title: "CPU", keyLabel: "CPU", rows: snapshot.cpu.cores, mono: true },
-    { id: "memory", title: "Memory", keyLabel: "Measure", rows: snapshot.memory, mono: false },
-    { id: "disk", title: "Disk", keyLabel: "Path", rows: snapshot.disk, mono: true },
-    { id: "limits", title: "Limits", keyLabel: "Measure", rows: snapshot.limits, mono: false },
-    { id: "network", title: "Network", keyLabel: "Interface", rows: snapshot.network, mono: true },
-    { id: "process", title: "Process", keyLabel: "Field", rows: snapshot.process, mono: false },
-    { id: "versions", title: "Versions", keyLabel: "Component", rows: snapshot.versions, mono: true },
-  ];
-
-  const stats = [
-    renderStat("OS", osLabel, os.hostname(), true),
-    renderStat("CPUs", String(snapshot.cpu.count), snapshot.cpu.model, false),
-    renderStat("Memory", formatBytes(memoryLimit || snapshot.memoryTotal), memoryLimit ? "Limit for this process" : "Total on the host", false),
-    renderStat("Node.js", process.versions.node, `${os.type()} ${os.machine()}`, false),
-  ];
-
-  const nav = sections.map((section) => `<a href="#${section.id}">${section.title}</a>`).join("");
-
-  return `<!doctype html>
-<html lang="en" style="color-scheme: dark">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<title>System dump</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..600&family=Geist+Mono:wght@400..600&display=swap" referrerpolicy="no-referrer">
-<link rel="stylesheet" href="https://vercel.com/geist/vercel-brand.css">
-<style>
-/* Gives every table the same column split, so values line up from one section to the next. */
+const PAGE_CSS = `/* Gives every table the same column split, so values line up from one section to the next. */
 .vbg-custom-table {
   table-layout: fixed;
 }
@@ -175,8 +90,187 @@ function renderPage(headers: IncomingHttpHeaders, snapshot: SystemSnapshot): str
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}`;
+
+const REMOTE_HEAD = `<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..600&family=Geist+Mono:wght@400..600&display=block" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="https://vercel.com/geist/vercel-brand.css">
+<style>
+${PAGE_CSS}
+</style>`;
+
+// Downloads the styles before the server takes requests. These constants must come first, because the top-level await runs at this line.
+const assets = await loadAssets();
+
+const server = createServer(async (request, response) => {
+  const path = request.url?.split("?")[0] ?? "/";
+  const asset = assets.files.get(path);
+
+  if (request.method === "GET" && asset) {
+    response.writeHead(200, { "content-type": asset.type, "cache-control": "public, max-age=86400" }).end(asset.body);
+    return;
+  }
+
+  if (request.method !== "GET" || path !== "/") {
+    response.writeHead(404, { "content-type": "text/plain" }).end("Not found\n");
+    return;
+  }
+
+  try {
+    const html = renderPage(request.headers, await collectSystemSnapshot());
+
+    response.writeHead(200, {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "no-store",
+      "x-robots-tag": "noindex, nofollow",
+      "x-content-type-options": "nosniff",
+    });
+    response.end(html);
+  } catch (error) {
+    console.error(error);
+    response.writeHead(500, { "content-type": "text/plain" }).end("Cannot collect the system data\n");
+  }
+});
+
+server.listen(port, host, () => {
+  console.log(`sysdump is listening on http://${host}:${port}`);
+});
+
+// Stops on Ctrl+C and on "docker stop" without the 10 s kill timeout.
+const stop = () => server.close(() => process.exit(0));
+process.on("SIGINT", stop);
+process.on("SIGTERM", stop);
+
+// Styles and fonts
+
+interface Asset {
+  type: string;
+  body: string | Buffer;
 }
-</style>
+
+interface Assets {
+  head: string;
+  files: Map<string, Asset>;
+}
+
+/**
+ * Downloads the brand stylesheet and the Latin Geist fonts once at startup, and serves them from this server.
+ * A same-origin stylesheet in <head> blocks the first paint, and preloaded fonts with `font-display: block` do not swap,
+ * so the page shows no flash of unstyled text. If the download fails, the page links to the remote files.
+ */
+async function loadAssets(): Promise<Assets> {
+  try {
+    const [brandCss, fontsCss] = await Promise.all([fetchText(BRAND_CSS_URL), fetchText(FONTS_CSS_URL, BROWSER_USER_AGENT)]);
+    const faces = [...fontsCss.matchAll(/\/\* latin \*\/\s*(@font-face\s*\{[^}]*\})/g)].map((match) => match[1] ?? "");
+    const fonts = await Promise.all(faces.map(downloadFontFace));
+    const files = new Map<string, Asset>();
+
+    fonts.forEach((font) => files.set(font.path, { type: "font/woff2", body: font.body }));
+
+    const css = [...fonts.map((font) => font.face), brandCss, PAGE_CSS].join("\n");
+    files.set("/style.css", { type: "text/css; charset=utf-8", body: css });
+
+    const preloads = fonts.map((font) => `<link rel="preload" href="${font.path}" as="font" type="font/woff2" crossorigin>`);
+
+    return { head: [...preloads, `<link rel="stylesheet" href="/style.css">`].join("\n"), files };
+  } catch (error) {
+    console.warn(`Cannot download the styles, so the page links to the remote files: ${String(error)}`);
+
+    return { head: REMOTE_HEAD, files: new Map() };
+  }
+}
+
+async function downloadFontFace(face: string): Promise<{ path: string; face: string; body: Buffer }> {
+  const url = face.match(/url\((https:[^)]+\.woff2)\)/)?.[1];
+
+  if (!url) {
+    throw new Error("A @font-face rule has no woff2 URL");
+  }
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`${url} returned ${response.status}`);
+  }
+
+  const path = `/fonts/${url.split("/").pop()}`;
+
+  return { path, face: face.replace(url, path), body: Buffer.from(await response.arrayBuffer()) };
+}
+
+async function fetchText(url: string, userAgent?: string): Promise<string> {
+  const headers: Record<string, string> = {};
+
+  if (userAgent) {
+    headers["user-agent"] = userAgent;
+  }
+
+  const response = await fetch(url, { headers });
+
+  if (!response.ok) {
+    throw new Error(`${url} returned ${response.status}`);
+  }
+
+  return response.text();
+}
+
+// Page rendering
+
+/**
+ * Renders the full HTML page. Every value goes through `escapeHtml`, because headers and environment values can hold markup.
+ *
+ * @param headers The request headers.
+ * @param snapshot The system data for this request.
+ * @returns The HTML document.
+ *
+ * @example
+ * response.end(renderPage(request.headers, await collectSystemSnapshot()));
+ */
+function renderPage(headers: IncomingHttpHeaders, snapshot: SystemSnapshot): string {
+  const headerRows: Row[] = Object.entries(headers)
+    .map(([label, value]) => ({ label, value: Array.isArray(value) ? value.join(", ") : (value ?? "") }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  const osName = findRow(snapshot.os, ["PRETTY_NAME", "ProductName"]);
+  const osVersion = findRow(snapshot.os, ["ProductVersion"]);
+  const osLabel = [osName, osVersion].filter(Boolean).join(" ") || os.platform();
+
+  // Without a cgroup limit, constrainedMemory() returns 0 or a value near 2^64, so only a value below the host total is a real limit.
+  const constrainedMemory = process.constrainedMemory();
+  const memoryLimit = constrainedMemory > 0 && constrainedMemory < snapshot.memoryTotal ? constrainedMemory : 0;
+
+  const sections: Section[] = [
+    { id: "headers", title: "Headers", keyLabel: "Header", rows: headerRows, mono: true },
+    { id: "env", title: "Environment", keyLabel: "Variable", rows: snapshot.env, mono: true },
+    { id: "os", title: "OS", keyLabel: "Field", rows: snapshot.os, mono: false },
+    { id: "kernel", title: "Kernel", keyLabel: "Field", rows: snapshot.uname, mono: false },
+    { id: "cpu", title: "CPU", keyLabel: "CPU", rows: snapshot.cpu.cores, mono: true },
+    { id: "memory", title: "Memory", keyLabel: "Measure", rows: snapshot.memory, mono: false },
+    { id: "disk", title: "Disk", keyLabel: "Path", rows: snapshot.disk, mono: true },
+    { id: "limits", title: "Limits", keyLabel: "Measure", rows: snapshot.limits, mono: false },
+    { id: "network", title: "Network", keyLabel: "Interface", rows: snapshot.network, mono: true },
+    { id: "process", title: "Process", keyLabel: "Field", rows: snapshot.process, mono: false },
+    { id: "versions", title: "Versions", keyLabel: "Component", rows: snapshot.versions, mono: true },
+  ];
+
+  const stats = [
+    renderStat("OS", osLabel, os.hostname(), true),
+    renderStat("CPUs", String(snapshot.cpu.count), snapshot.cpu.model, false),
+    renderStat("Memory", formatBytes(memoryLimit || snapshot.memoryTotal), memoryLimit ? "Limit for this process" : "Total on the host", false),
+    renderStat("Node.js", process.versions.node, `${os.type()} ${os.machine()}`, false),
+  ];
+
+  const nav = sections.map((section) => `<a href="#${section.id}">${section.title}</a>`).join("");
+
+  return `<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>System dump</title>
+${assets.head}
 </head>
 <body class="vbg-report" data-theme="dark">
 <div class="vbg-shell">
